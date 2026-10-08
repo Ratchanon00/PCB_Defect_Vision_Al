@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 title PCB Defect Vision AI Dashboard
 color 0A
 echo =====================================================================
