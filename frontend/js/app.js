@@ -214,7 +214,8 @@ function setupEventListeners() {
     viewportStage.classList.remove('grabbing');
   });
 
-  document.getElementById('downloadAnnotatedBtn').addEventListener('click', downloadAnnotatedImage);
+  const dlBtn = document.getElementById('downloadAnnotatedBtn');
+  if (dlBtn) dlBtn.addEventListener('click', downloadAnnotatedImage);
   document.getElementById('exportJsonBtn').addEventListener('click', exportJsonData);
 }
 
