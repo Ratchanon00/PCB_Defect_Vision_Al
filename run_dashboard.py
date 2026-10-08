@@ -2,6 +2,8 @@ import sys
 import os
 import socket
 import webbrowser
+import threading
+import time
 import uvicorn
 
 def is_port_in_use(port: int) -> bool:
@@ -14,6 +16,16 @@ def find_available_port(start_port: int = 8000) -> int:
         port += 1
     return port
 
+def wait_and_open_browser(url: str, port: int):
+    for _ in range(60):
+        time.sleep(0.5)
+        if is_port_in_use(port):
+            try:
+                webbrowser.open(url)
+            except Exception:
+                pass
+            break
+
 def main():
     port = find_available_port(8000)
     url = f"http://127.0.0.1:{port}"
@@ -22,13 +34,10 @@ def main():
     print(" 🚀 PCB DEFECT VISION AI - DASHBOARD SERVER")
     print("=" * 65)
     print(f" URL: {url}")
-    print(" Loading YOLO11m PCB Defect Detection System...")
+    print(" Initializing PyTorch CUDA & YOLO11m Engine...")
     print("=" * 65)
 
-    try:
-        webbrowser.open(url)
-    except Exception:
-        pass
+    threading.Thread(target=wait_and_open_browser, args=(url, port), daemon=True).start()
 
     uvicorn.run("backend.server:app", host="127.0.0.1", port=port, log_level="info")
 

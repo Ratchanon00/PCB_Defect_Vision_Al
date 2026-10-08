@@ -13,7 +13,6 @@ WORKSPACE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_CACHE = {}
 
 def get_available_models():
-    """Find all potential model weight files."""
     models = []
 
     primary_cand = os.path.join(WORKSPACE_DIR, "yolo11m.pt")
