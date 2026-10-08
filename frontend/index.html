@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCB Defect Vision AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261008_align_bottom">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation & System Status Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-box">
+        <svg class="circuit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="20" rx="3"></rect>
+          <path d="M7 2v4M12 2v4M17 2v4M7 18v4M12 18v4M17 18v4M2 7h4M2 12h4M2 17h4M18 7h4M18 12h4M18 17h4"></path>
+          <circle cx="12" cy="12" r="3" fill="#10B981"></circle>
+        </svg>
+      </div>
+      <div class="title-meta">
+        <h1>PCB DEFECT <span class="accent-text">VISION AI</span></h1>
+      </div>
+    </div>
+
+
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    <!-- Top Bar: Sample Gallery & Quick Picker -->
+    <section class="sample-bar-section">
+      <div class="section-headline">
+        <div class="title-with-icon">
+          <span class="icon-circle">⚡</span>
+          <span>ภาพตัวอย่างสำหรับทดสอบทันที (Quick Test Samples)</span>
+        </div>
+      </div>
+      
+      <div class="samples-carousel" id="samplesCarousel">
+        <div class="sample-skeleton">กำลังโหลดตัวอย่าง...</div>
+      </div>
+    </section>
+
+    <!-- Inspection Workstation Area -->
+    <section class="workstation-grid">
+      <!-- Left Column: Controls & Upload -->
+      <aside class="control-sidebar">
+        <!-- Upload Zone -->
+        <div class="card upload-card">
+          <div class="card-header">
+            <h3>อัปโหลดภาพ PCB (Upload Image)</h3>
+            <span class="badge">JPG / PNG</span>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*" class="file-input-hidden">
+            <div class="drop-content">
+              <div class="upload-icon-pulse">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <p class="drop-text-primary">ลากไฟล์มาวางที่นี่ หรือ <span class="highlight-link">คลิกเพื่อเลือกไฟล์</span></p>
+              <p class="drop-text-sub">รองรับการกด <kbd>Ctrl</kbd> + <kbd>V</kbd> เพื่อวางภาพจากคลิปบอร์ด</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detection Parameters -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>ตั้งค่าโมเดล & ความไว (Parameters)</h3>
+          </div>
+
+          <div class="settings-group">
+            <label for="modelSelect">Detection Model</label>
+            <select id="modelSelect" class="cyber-select">
+              <option value="">กำลังค้นหาโมเดล...</option>
+            </select>
+          </div>
+
+          <div class="settings-group">
+            <div class="slider-header">
+              <label for="confRange">Confidence Threshold</label>
+              <span class="slider-value" id="confVal">50%</span>
+            </div>
+            <input type="range" id="confRange" min="5" max="95" value="50" class="cyber-range">
+
+          </div>
+
+          <div class="settings-group">
+            <div class="slider-header">
+              <label for="iouRange">IoU (NMS Overlap Threshold)</label>
+              <span class="slider-value" id="iouVal">45%</span>
+            </div>
+            <input type="range" id="iouRange" min="10" max="90" value="45" class="cyber-range">
+          </div>
+
+          <div class="view-toggles-group">
+            <label>View Mode</label>
+            <div class="toggle-buttons" id="viewModeGroup">
+              <button class="mode-btn active" data-mode="annotated">AI ตรวจจับ (Detection)</button>
+              <button class="mode-btn" data-mode="split">ภาพคู่ (Side-by-Side)</button>
+              <button class="mode-btn" data-mode="original">ต้นฉบับ (Original)</button>
+            </div>
+          </div>
+
+          <button id="reRunBtn" class="cyber-btn primary-glow">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            ประมวลผลซ้ำ (Re-Detect)
+          </button>
+        </div>
+
+        <!-- Quick Dataset Info -->
+        <div class="card dataset-card">
+          <div class="card-header">
+            <h3>Dataset Info</h3>
+          </div>
+          <div class="stats-mini-grid">
+            <div class="stat-mini">
+              <span class="s-label">Train Images</span>
+              <span class="s-val" id="statTrainCount">--</span>
+            </div>
+            <div class="stat-mini">
+              <span class="s-label">Val Images</span>
+              <span class="s-val" id="statValCount">--</span>
+            </div>
+            <div class="stat-mini">
+              <span class="s-label">Class</span>
+              <span class="s-val highlight">missing_hole</span>
+            </div>
+            <div class="stat-mini">
+              <span class="s-label">Architecture</span>
+              <span class="s-val">YOLO11m</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Main Inspection Canvas View -->
+      <section class="canvas-center-section">
+        <div class="viewer-card">
+          <div class="viewer-toolbar">
+            <div class="toolbar-left">
+              <span class="viewer-badge" id="imageNameBadge">ยังไม่มีภาพที่เลือก</span>
+              <span class="dimension-badge" id="imageDimBadge">0 x 0 px</span>
+            </div>
+
+            <div class="toolbar-actions">
+              <button id="zoomInBtn" class="tool-btn" title="ซูมเข้า">+</button>
+              <button id="zoomOutBtn" class="tool-btn" title="ซูมออก">-</button>
+              <button id="resetZoomBtn" class="tool-btn" title="รีเซ็ตขนาด 100%">1:1</button>
+              <button id="downloadAnnotatedBtn" class="tool-btn highlight" title="ดาวน์โหลดภาพพร้อมผลตรวจ">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                บันทึกภาพ
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Visual Viewport with Pan & Zoom -->
+          <div class="viewport-stage" id="viewportStage">
+            <!-- Laser Scanner Effect Line -->
+            <div class="scanner-laser" id="scannerLaser"></div>
+
+            <!-- Single View Container -->
+            <div class="stage-transform-container" id="stageContainer">
+              <img id="mainDisplayImg" class="viewport-image" src="" alt="PCB Inspection View" style="display: none;">
+              
+              <!-- Split View Containers -->
+              <div class="split-view-container" id="splitViewContainer" style="display: none;">
+                <div class="split-pane">
+                  <div class="pane-label">ภาพต้นฉบับ (Original)</div>
+                  <img id="splitOriginalImg" class="split-img" src="" alt="Original PCB">
+                </div>
+                <div class="split-pane">
+                  <div class="pane-label">ผลการตรวจจับ AI (Annotated)</div>
+                  <img id="splitAnnotatedImg" class="split-img" src="" alt="Annotated PCB">
+                </div>
+              </div>
+
+              <!-- Interactive Bounding Box Highlight Overlay Layer -->
+              <div class="interactive-box-layer" id="boxOverlayLayer"></div>
+            </div>
+
+            <!-- Empty State Placeholder -->
+            <div class="empty-stage-state" id="emptyState">
+              <div class="empty-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="22" y1="12" x2="18" y2="12"></line>
+                  <line x1="6" y1="12" x2="2" y2="12"></line>
+                  <line x1="12" y1="6" x2="12" y2="2"></line>
+                  <line x1="12" y1="22" x2="12" y2="18"></line>
+                </svg>
+              </div>
+              <h3>พร้อมสำหรับการตรวจสอบ (Ready for Inspection)</h3>
+              <p>เลือกภาพตัวอย่างจากแถบด้านบน หรือลากและวางภาพ PCB เพื่อเริ่มการตรวจจับจุดบกพร่อง</p>
+            </div>
+
+            <!-- Processing Loader -->
+            <div class="processing-overlay" id="processingOverlay" style="display: none;">
+              <div class="spinner-core"></div>
+              <p class="processing-text">AI กำลังสแกนหาข้อบกพร่องของ PCB...</p>
+              <span class="processing-sub">YOLO11m Inference in Progress</span>
+            </div>
+          </div>
+
+          <!-- Verdict Banner Docked Under Image Viewport -->
+          <div class="viewer-verdict-dock">
+            <div class="verdict-banner idle" id="verdictBanner">
+              <div class="verdict-icon" id="verdictIcon">⏳</div>
+              <div class="verdict-content">
+                <h2 id="verdictTitle">รอผลการตรวจสอบ</h2>
+                <p id="verdictSub">กรุณาเลือกหรืออัปโหลดภาพ PCB</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- Defect Telemetry Full-Width Below Workstation -->
+    <section class="telemetry-below">
+
+      <!-- Telemetry Metrics Cards -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <span class="m-title">ข้อบกพร่องที่พบ</span>
+          <div class="m-val-wrap">
+            <span class="m-val" id="metricDefectCount">0</span>
+            <span class="m-unit">จุด</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <span class="m-title">ความเร็วอนุมาน</span>
+          <div class="m-val-wrap">
+            <span class="m-val highlight" id="metricInferenceTime">--</span>
+            <span class="m-unit">ms</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <span class="m-title">FPS ประมาณการ</span>
+          <div class="m-val-wrap">
+            <span class="m-val" id="metricFps">--</span>
+            <span class="m-unit">fps</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Magnified Defect Crops Gallery -->
+      <div class="card defect-crops-card">
+        <div class="card-header">
+          <h3>ภาพซูมจุดบกพร่อง (Magnified Defects)</h3>
+          <span class="badge" id="defectCountBadge">0 จุด</span>
+        </div>
+        <div class="crops-scroll-gallery" id="cropsGallery">
+          <p class="empty-crops-msg">ยังไม่มีจุดบกพร่องที่ตรวจพบ</p>
+        </div>
+      </div>
+
+      <!-- Defect Coordinates Table -->
+      <div class="card defect-table-card">
+        <div class="card-header">
+          <h3>พิกัดและรายละเอียด (Defect Table)</h3>
+          <button id="exportJsonBtn" class="mini-btn" title="ส่งออก JSON">JSON</button>
+        </div>
+
+        <div class="table-container">
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>ลำดับ</th>
+                <th>ประเภท</th>
+                <th>ความมั่นใจ</th>
+                <th>พิกัด (X, Y)</th>
+                <th>ขนาด (W×H)</th>
+              </tr>
+            </thead>
+            <tbody id="defectTableBody">
+              <tr>
+                <td colspan="5" class="empty-td">ไม่มีข้อมูล</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/app.js?v=20261008_1"></script>
+</body>
+</html>
